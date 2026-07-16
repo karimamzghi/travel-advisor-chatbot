@@ -127,8 +127,8 @@ QUESTION_BY_FIELD = {
         "museums, nature, beaches, shopping, or nightlife?"
     ),
      "travellers": (
-        "Who will be travelling? Solo with others? Please include the number of adults, "
-        "the number of children, and the children's ages if applicable."
+        "Traveling Solo or with company? Please include the number of adults, "
+        "the number of children, and the children's ages if possible."
     ),
     "budget": (
         "What approximate budget should I plan around? "
