@@ -164,6 +164,7 @@ class TravelModelClient:
             input_tokens=total_input_tokens,
             output_tokens=total_output_tokens,
             estimated_cost_usd=estimate_cost(
+                provider="openai",
                 model=self.model,
                 input_tokens=total_input_tokens,
                 output_tokens=total_output_tokens,

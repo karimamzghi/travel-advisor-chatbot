@@ -206,6 +206,7 @@ class AnthropicTravelModelClient:
             input_tokens=total_input_tokens,
             output_tokens=total_output_tokens,
             estimated_cost_usd=estimate_cost(
+                provider="anthropic",
                 model=self.model,
                 input_tokens=total_input_tokens,
                 output_tokens=total_output_tokens,
