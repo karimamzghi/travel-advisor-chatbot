@@ -67,15 +67,22 @@ def get_weather(
         params={
             "latitude": latitude,
             "longitude": longitude,
-            "current": [
-                "temperaturepytho_2m",
-                "weather_code",
-            ],
+            "current": "temperature_2m,weather_code",
         },
         timeout=10,
     )
 
-    weather = weather_response.json()["current"]
+    weather_data = weather_response.json()
+
+    if "current" not in weather_data:
+        return WeatherResult(
+            city=city,
+            condition="Unknown",
+            temperature_c=None,
+            source="Open-Meteo",
+        )
+
+    weather = weather_data["current"]
 
     return WeatherResult(
         city=city,

@@ -1,10 +1,16 @@
 from openai import OpenAI
 import json
+import time
 
 from app.config import settings
 from app.prompts import (
     ITINERARY_GENERATION_PROMPT,
     TRIP_EXTRACTION_PROMPT,
+)
+from app.logger import print_metrics
+from app.metrics import (
+    RequestMetrics,
+    estimate_cost,
 )
 from app.schemas import Itinerary, TripProfile, TripUpdate
 from app.tools.definitions import WEATHER_TOOL_DEFINITION
@@ -24,6 +30,7 @@ class TravelModelClient:
         recent_messages: list[dict[str, str]],
         latest_message: str,
     ) -> TripUpdate:
+        start_time = time.perf_counter()
         response = self.client.responses.parse(
             model=self.model,
             instructions=TRIP_EXTRACTION_PROMPT,
@@ -89,6 +96,28 @@ class TravelModelClient:
                     raise RuntimeError(
                         "Failed to parse itinerary."
                     )
+                
+                latency = time.perf_counter() - start_time
+
+                usage = final.usage
+
+                metrics = RequestMetrics(
+                    provider="openai",
+                    model=self.model,
+                    latency_seconds=latency,
+                    input_tokens=usage.input_tokens,
+                    output_tokens=usage.output_tokens,
+                    total_tokens=usage.total_tokens,
+                    estimated_cost_usd=estimate_cost(
+                        provider="openai",
+                        model=self.model,
+                        input_tokens=usage.input_tokens,
+                        output_tokens=usage.output_tokens,
+                    ),
+                    weather_tool_used=True,
+                )
+
+                print_metrics(metrics)
 
                 return final.output_parsed
 
