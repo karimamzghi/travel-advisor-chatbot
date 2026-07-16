@@ -1,7 +1,15 @@
 from openai import APIConnectionError, APIError, RateLimitError
 
+from anthropic import (
+    APIConnectionError as AnthropicConnectionError,
+)
+from anthropic import APIError as AnthropicAPIError
+from anthropic import RateLimitError as AnthropicRateLimitError
+from openai import APIConnectionError, APIError, RateLimitError
+
 from app.conversation import ConversationState
-from app.model_client import TravelModelClient
+from app.config import ProviderName, settings
+from app.provider_factory import create_travel_client
 from app.renderer import render_itinerary_markdown
 from app.trip_service import (
     apply_trip_update,
@@ -9,10 +17,32 @@ from app.trip_service import (
     get_missing_required_fields,
 )
 
+def choose_provider() -> ProviderName:
+    print("\nChoose the AI provider:")
+    print("1. OpenAI")
+    print("2. Anthropic")
+
+    choice = input("Provider [1/2]: ").strip()
+
+    if choice == "1":
+        return "openai"
+
+    if choice == "2":
+        return "anthropic"
+
+    print(
+        f"Invalid selection. Using default provider: "
+        f"{settings.default_provider}"
+    )
+
+    return settings.default_provider
 
 def run_chatbot() -> None:
-    client = TravelModelClient()
+    provider = choose_provider()
+    client = create_travel_client(provider)
     state = ConversationState()
+
+    print(f"\nUsing provider: {provider}\n")
 
     greeting = (
         "Hello! I’m your AI Travel Advisor. My name is LostNoMore :D "
@@ -95,6 +125,21 @@ def run_chatbot() -> None:
         except APIError as exc:
             print(
                 "\nAssistant: The model provider returned an error. "
+                f"Details: {exc}\n"
+            )
+        except AnthropicRateLimitError:
+            print(
+                "\nAssistant: Anthropic is currently rate-limiting "
+                "requests. Please wait and try again.\n"
+            )
+        except AnthropicConnectionError:
+            print(
+                "\nAssistant: I could not connect to Anthropic. "
+                "Please check your internet connection.\n"
+            )
+        except AnthropicAPIError as exc:
+            print(
+                "\nAssistant: Anthropic returned an error. "
                 f"Details: {exc}\n"
             )
         except Exception as exc:

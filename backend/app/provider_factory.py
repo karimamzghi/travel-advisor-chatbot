@@ -2,7 +2,7 @@ from typing import Protocol
 
 from app.anthropic_client import AnthropicTravelModelClient
 from app.config import ProviderName
-from app.model_client import TravelModelClient
+from app.openai_client import TravelModelClient
 from app.schemas import Itinerary, TripProfile, TripUpdate
 
 
