@@ -95,3 +95,20 @@ class Itinerary(BaseModel):
     days: list[ItineraryDay]
     practical_tips: list[str]
     estimated_budget: EstimatedBudget
+
+from typing import Literal
+
+
+class ChatRequest(BaseModel):
+    session_id: str
+    provider: Literal["openai", "anthropic"]
+    message: str = Field(min_length=1)
+
+
+class ChatResponse(BaseModel):
+    session_id: str
+    provider: str
+    status: str
+    assistant_message: str
+    trip_profile: TripProfile
+    itinerary: Itinerary | None = None
