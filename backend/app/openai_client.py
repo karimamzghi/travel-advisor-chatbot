@@ -15,8 +15,8 @@ class TravelModelClient:
     
     def __init__(self) -> None:
         self.client = OpenAI(api_key=settings.openai_api_key)
-        self.model = settings.travel_model
-
+        self.model = settings.openai_model
+        
     def extract_trip_update(
         self,
         *,
