@@ -1,4 +1,5 @@
 from openai import OpenAI
+import json
 
 from app.config import settings
 from app.prompts import (
@@ -6,6 +7,8 @@ from app.prompts import (
     TRIP_EXTRACTION_PROMPT,
 )
 from app.schemas import Itinerary, TripProfile, TripUpdate
+from app.tools.definitions import WEATHER_TOOL_DEFINITION
+from app.tools.executor import execute_tool
 
 
 class TravelModelClient:
@@ -41,84 +44,80 @@ class TravelModelClient:
         )
 
         return response.output_parsed
+    
+    def generate_itinerary(
+        self,
+        profile: TripProfile,
+    ) -> Itinerary:
 
-    def generate_itinerary(self, profile: TripProfile) -> Itinerary:
-        response = self.client.responses.parse(
+        # First request
+        response = self.client.responses.create(
             model=self.model,
             instructions=ITINERARY_GENERATION_PROMPT,
             input=[
                 {
                     "role": "user",
                     "content": (
-                        "Generate an itinerary for this validated trip profile:\n"
+                        "Generate an itinerary for this trip profile:\n"
                         f"{profile.model_dump_json(indent=2)}"
                     ),
                 }
             ],
-            text_format=Itinerary,
+            tools=[WEATHER_TOOL_DEFINITION],
         )
 
-        return response.output_parsed
-    import json
+        # Continue until the model is done
+        while True:
 
-from app.tools.definitions import WEATHER_TOOL_DEFINITION
-from app.tools.executor import execute_tool
+            function_calls = [
+                item
+                for item in response.output
+                if item.type == "function_call"
+            ]
 
-def generate_itinerary(
-    self,
-    profile: TripProfile,
-) -> Itinerary:
-    initial_response = self.client.responses.create(
-        model=self.model,
-        instructions=ITINERARY_GENERATION_PROMPT,
-        input=[
-            {
-                "role": "user",
-                "content": (
-                    "Generate an itinerary for this validated "
-                    "trip profile:\n"
-                    f"{profile.model_dump_json(indent=2)}"
-                ),
-            }
-        ],
-        tools=[WEATHER_TOOL_DEFINITION],
-    )
+            # No tool requested -> we're finished
+            if not function_calls:
 
-    tool_outputs: list[dict[str, str]] = []
+                final = self.client.responses.parse(
+                    model=self.model,
+                    instructions=ITINERARY_GENERATION_PROMPT,
+                    previous_response_id=response.id,
+                    text_format=Itinerary,
+                )
 
-    for output_item in initial_response.output:
-        if output_item.type != "function_call":
-            continue
+                if final.output_parsed is None:
+                    raise RuntimeError(
+                        "Failed to parse itinerary."
+                    )
 
-        tool_result = execute_tool(
-            tool_name=output_item.name,
-            raw_arguments=output_item.arguments,
-        )
+                return final.output_parsed
 
-        tool_outputs.append(
-            {
-                "type": "function_call_output",
-                "call_id": output_item.call_id,
-                "output": json.dumps(tool_result),
-            }
-        )
+            tool_outputs = []
 
-    if not tool_outputs:
-        raise RuntimeError(
-            "The model did not request the expected weather tool."
-        )
+            for function_call in function_calls:
 
-    final_response = self.client.responses.parse(
-        model=self.model,
-        instructions=ITINERARY_GENERATION_PROMPT,
-        previous_response_id=initial_response.id,
-        input=tool_outputs,
-        text_format=Itinerary,
-    )
+                print(f"\n🔧 Calling tool: {function_call.name}")
+                print(f"Arguments: {function_call.arguments}")
 
-    if final_response.output_parsed is None:
-        raise RuntimeError(
-            "The model did not return a valid itinerary."
-        )
+                tool_result = execute_tool(
+                    tool_name=function_call.name,
+                    raw_arguments=function_call.arguments,
+                )
 
-    return final_response.output_parsed
+                print(f"Result: {tool_result}\n")
+
+                tool_outputs.append(
+                    {
+                        "type": "function_call_output",
+                        "call_id": function_call.call_id,
+                        "output": json.dumps(tool_result),
+                    }
+                )
+
+            response = self.client.responses.create(
+                model=self.model,
+                instructions=ITINERARY_GENERATION_PROMPT,
+                previous_response_id=response.id,
+                input=tool_outputs,
+            )
+
