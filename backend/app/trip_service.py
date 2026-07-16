@@ -12,6 +12,20 @@ def get_missing_required_fields(profile: TripProfile) -> list[str]:
 
     if not profile.interests:
         missing.append("interests")
+    
+    travellers_known = (
+        profile.travellers.adults is not None
+        or profile.travellers.children is not None
+    )
+
+    if not travellers_known:
+        missing.append("travellers")
+
+    if profile.budget.amount is None:
+        missing.append("budget")
+
+    if profile.pace == "unknown":
+        missing.append("pace")
 
     return missing
 
@@ -89,14 +103,40 @@ def apply_trip_update(
     if update.pace is not None:
         updated.pace = update.pace
 
+    if update.budget_amount is not None:
+        updated.budget.amount = update.budget_amount
+
+    if update.budget_currency is not None:
+        updated.budget.currency = update.budget_currency
+
+    if update.budget_period is not None:
+        updated.budget.period = update.budget_period
+
+    if update.budget_includes_accommodation is not None:
+        updated.budget.includes_accommodation = (
+            update.budget_includes_accommodation
+        )
+
     return updated
 
 QUESTION_BY_FIELD = {
     "destination": "Where would you like to travel?",
     "duration_days": "How many days would you like the itinerary to cover?",
     "interests": (
-        "What kinds of activities interest you most—for example food, "
+        "What kinds of activities interest you most for example food, "
         "museums, nature, beaches, shopping, or nightlife?"
+    ),
+     "travellers": (
+        "Who will be travelling? Solo with others? Please include the number of adults, "
+        "the number of children, and the children's ages if applicable."
+    ),
+    "budget": (
+        "What approximate budget should I plan around? "
+        "Please mention whether it is per day or for the whole trip, "
+        "and whether accommodation is included."
+    ),
+    "pace": (
+        "What travel pace would you prefer: relaxed, balanced, or intensive?"
     ),
 }
 

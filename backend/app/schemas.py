@@ -53,6 +53,15 @@ class TripUpdate(BaseModel):
 
     pace: Literal["relaxed", "balanced", "intensive", "unknown"] | None = None
 
+    budget_amount: float | None = None
+    budget_currency: str | None = None
+    budget_period: Literal[
+        "total",
+        "per_day",
+        "unknown",
+    ] | None = None
+    budget_includes_accommodation: bool | None = None
+
     explicit_correction: bool = False
     ambiguity: str | None = None
     contradiction: str | None = None

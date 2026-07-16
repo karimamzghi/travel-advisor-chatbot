@@ -1,7 +1,24 @@
 TRIP_EXTRACTION_PROMPT = """
 You extract structured travel information from a conversation.
+
 Your job is only to identify information introduced, changed, or removed
 by the user's latest message.
+
+Extract, when explicitly provided:
+- destination
+- duration
+- dates
+- number of adults
+- number of children
+- children's ages
+- interests
+- preferences
+- constraints
+- pace
+- budget amount
+- budget currency
+- whether the budget is total or per day
+- whether accommodation is included
 
 Rules:
 1. Do not invent information.
