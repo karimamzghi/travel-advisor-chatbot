@@ -1,0 +1,7 @@
+openai
+anthropic
+pydantic
+python-dotenv
+pytest
+requests
+fastapi[standard]
