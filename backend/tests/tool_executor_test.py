@@ -4,8 +4,6 @@ from app.tools.executor import (
     ToolExecutionError,
     execute_tool,
 )
-
-
 def test_execute_registered_weather_tool() -> None:
     result = execute_tool(
         tool_name="get_weather",
@@ -13,9 +11,10 @@ def test_execute_registered_weather_tool() -> None:
     )
 
     assert result["city"] == "Barcelona"
-    assert result["condition"] == "sunny"
-    assert result["temperature_c"] == 25.0
-
+    assert isinstance(result["condition"], str)
+    assert result["condition"]
+    assert result["temperature_c"] is not None
+    assert result["source"] == "Open-Meteo"
 
 def test_reject_unknown_tool() -> None:
     with pytest.raises(ToolExecutionError):
