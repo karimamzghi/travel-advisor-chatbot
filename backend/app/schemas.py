@@ -30,7 +30,13 @@ class TripProfile(BaseModel):
     preferences: list[str] = Field(default_factory=list)
     constraints: list[str] = Field(default_factory=list)
 
-    pace: Literal["relaxed", "balanced", "intensive", "unknown"] = "unknown"
+    pace: Literal[
+        "relaxed",
+        "balanced",
+        "intensive",
+        "unknown",
+    ] = "unknown"
+
     budget: Budget = Field(default_factory=Budget)
 
 
@@ -51,15 +57,22 @@ class TripUpdate(BaseModel):
     preferences_to_add: list[str] = Field(default_factory=list)
     constraints_to_add: list[str] = Field(default_factory=list)
 
-    pace: Literal["relaxed", "balanced", "intensive", "unknown"] | None = None
+    pace: Literal[
+        "relaxed",
+        "balanced",
+        "intensive",
+        "unknown",
+    ] | None = None
 
     budget_amount: float | None = None
     budget_currency: str | None = None
+
     budget_period: Literal[
         "total",
         "per_day",
         "unknown",
     ] | None = None
+
     budget_includes_accommodation: bool | None = None
 
     explicit_correction: bool = False
@@ -68,7 +81,12 @@ class TripUpdate(BaseModel):
 
 
 class Activity(BaseModel):
-    period: Literal["morning", "afternoon", "evening"]
+    period: Literal[
+        "morning",
+        "afternoon",
+        "evening",
+    ]
+
     title: str
     description: str
     location: str | None = None
@@ -96,7 +114,21 @@ class Itinerary(BaseModel):
     practical_tips: list[str]
     estimated_budget: EstimatedBudget
 
-from typing import Literal
+
+class ModelMetrics(BaseModel):
+    provider: str
+    model: str
+    latency_seconds: float
+    input_tokens: int
+    output_tokens: int
+    total_tokens: int
+    estimated_cost_usd: float
+    weather_tool_used: bool
+
+
+class ItineraryResult(BaseModel):
+    itinerary: Itinerary
+    metrics: ModelMetrics
 
 
 class ChatRequest(BaseModel):
@@ -112,3 +144,4 @@ class ChatResponse(BaseModel):
     assistant_message: str
     trip_profile: TripProfile
     itinerary: Itinerary | None = None
+    metrics: ModelMetrics | None = None
