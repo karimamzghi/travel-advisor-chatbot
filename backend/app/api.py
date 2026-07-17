@@ -6,6 +6,7 @@ from anthropic import RateLimitError as AnthropicRateLimitError
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from openai import APIConnectionError, APIError, RateLimitError
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.provider_factory import create_travel_client
 from app.renderer import render_itinerary_markdown
@@ -29,6 +30,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3000",
+        "http://127.0.0.1:3000",
         "https://travel.zeynlo.com",
     ],
     allow_credentials=False,
