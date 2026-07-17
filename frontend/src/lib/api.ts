@@ -31,7 +31,9 @@ export async function sendChatMessage({
   });
 
   if (!response.ok) {
-    throw new Error("LostNoMore could not complete the request.");
+    throw new Error(
+      "LostNoMore could not complete the request.",
+    );
   }
 
   return response.json() as Promise<ChatResponse>;
