@@ -21,7 +21,7 @@ MODEL_PRICING_PER_MILLION = {
         "input": 0.05,
         "output": 0.40,
     },
-    "claude-sonnet-4-6": {
+    "claude-sonnet-5": {
         "input": 3.00,
         "output": 15.00,
     },

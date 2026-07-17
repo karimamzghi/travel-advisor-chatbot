@@ -31,10 +31,23 @@ export async function sendChatMessage({
   });
 
   if (!response.ok) {
+    const errorText = await response.text();
+
+    console.error(
+      "Chat API error:",
+      response.status,
+      errorText,
+    );
+
     throw new Error(
-      "LostNoMore could not complete the request.",
+      errorText || "Failed to send chat message."
     );
   }
 
-  return response.json() as Promise<ChatResponse>;
+  const data: ChatResponse = await response.json();
+
+  console.log("FULL CHAT RESPONSE:", data);
+  console.log("METRICS:", data.metrics);
+
+  return data;
 }

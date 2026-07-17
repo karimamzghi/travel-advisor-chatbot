@@ -54,17 +54,6 @@ export interface Itinerary {
   };
 }
 
-export interface ModelMetrics {
-  provider: string;
-  model: string;
-  latency_seconds: number;
-  input_tokens: number;
-  output_tokens: number;
-  total_tokens: number;
-  estimated_cost_usd: number;
-  weather_tool_used: boolean;
-}
-
 export interface ChatResponse {
   session_id: string;
   provider: Provider;
@@ -77,6 +66,17 @@ export interface ChatResponse {
   trip_profile: TripProfile;
   itinerary: Itinerary | null;
   metrics: ModelMetrics | null;
+}
+
+export interface ModelMetrics {
+  provider: string;
+  model: string;
+  latency_seconds: number;
+  input_tokens: number;
+  output_tokens: number;
+  total_tokens: number;
+  estimated_cost_usd: number;
+  weather_tool_used: boolean;
 }
 
 export interface ChatMessage {

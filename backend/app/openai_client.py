@@ -21,6 +21,7 @@ class TravelModelClient:
             api_key=settings.openai_api_key,
         )
         self.model = settings.openai_model
+        self.last_metrics: RequestMetrics | None = None
 
     def extract_trip_update(
         self,
@@ -171,7 +172,7 @@ class TravelModelClient:
             ),
             weather_tool_used=weather_tool_used,
         )
-
+        self.last_metrics = metrics
         print_metrics(metrics)
-
+        
         return final_response.output_parsed

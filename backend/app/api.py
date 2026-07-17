@@ -4,7 +4,6 @@ from anthropic import (
 from anthropic import APIError as AnthropicAPIError
 from anthropic import RateLimitError as AnthropicRateLimitError
 from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
 from openai import APIConnectionError, APIError, RateLimitError
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -145,6 +144,30 @@ def chat(request: ChatRequest) -> ChatResponse:
             state.trip_profile
         )
 
+        request_metrics = getattr(
+            client,
+            "last_metrics",
+            None,
+        )
+
+        metrics_response = None
+
+        if request_metrics is not None:
+            metrics_response = {
+                "provider": request_metrics.provider,
+                "model": request_metrics.model,
+                "latency_seconds": request_metrics.latency_seconds,
+                "input_tokens": request_metrics.input_tokens,
+                "output_tokens": request_metrics.output_tokens,
+                "total_tokens": request_metrics.total_tokens,
+                "estimated_cost_usd": (
+                    request_metrics.estimated_cost_usd
+                ),
+                "weather_tool_used": (
+                    request_metrics.weather_tool_used
+                ),
+            }
+
         state.itinerary = itinerary
         state.status = "completed"
 
@@ -164,6 +187,7 @@ def chat(request: ChatRequest) -> ChatResponse:
             assistant_message=assistant_message,
             trip_profile=state.trip_profile,
             itinerary=itinerary,
+            metrics=metrics_response,
         )
 
     except (
