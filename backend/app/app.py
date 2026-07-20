@@ -30,13 +30,21 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:3000",
         "http://127.0.0.1:3000",
-        "https://travel-advisor-chatbot.vercel.app",
+        "https://travel-advisor-chatbot-five.vercel.app",
     ],
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+@app.get("/")
+def root() -> dict[str, str]:
+    return {
+        "status": "ok",
+        "service": "LostNoMore API",
+        "health": "/health",
+        "docs": "/docs",
+    }
 
 @app.get("/health")
 def health_check() -> dict[str, str]:
